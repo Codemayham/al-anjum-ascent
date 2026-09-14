@@ -188,7 +188,8 @@ export function CaseStudies() {
 
 export function Testimonials() {
   const [active, setActive] = useState(0);
-  const item = testimonials[active];
+  const item = testimonials[active] ?? testimonials[0];
+  if (!item) return null;
   return <section className="bg-charcoal py-24 text-hero-foreground lg:py-32"><div className="mx-auto grid max-w-7xl gap-14 px-5 lg:grid-cols-[.7fr_1.3fr]"><div><p className="text-xs font-bold uppercase tracking-[0.2em] text-brand">Client perspective</p><h2 className="mt-4 text-4xl font-semibold sm:text-5xl">What our clients say.</h2><p className="mt-5 text-sm text-hero-foreground/50">All testimonials are placeholders until verified client feedback is supplied.</p></div><div><Quote className="size-10 text-brand" /><blockquote className="mt-7 text-2xl leading-9 sm:text-3xl sm:leading-10">“{item.quote}”</blockquote><div className="mt-9 flex items-end justify-between gap-5"><div><strong>{item.name}</strong><p className="mt-1 text-sm text-hero-foreground/50">{item.role}</p></div><div className="flex gap-2"><Button variant="outline" size="icon" className="border-hero-foreground/20 bg-transparent text-hero-foreground hover:bg-hero-foreground/10" onClick={() => setActive((active - 1 + testimonials.length) % testimonials.length)} aria-label="Previous testimonial"><ChevronLeft /></Button><Button variant="outline" size="icon" className="border-hero-foreground/20 bg-transparent text-hero-foreground hover:bg-hero-foreground/10" onClick={() => setActive((active + 1) % testimonials.length)} aria-label="Next testimonial"><ChevronRight /></Button></div></div></div></div></section>;
 }
 
