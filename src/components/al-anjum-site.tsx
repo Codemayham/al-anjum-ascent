@@ -72,7 +72,7 @@ const stats = [
   ["[10+]", "Years' experience"],
   ["[50+]", "Industries served"],
   ["[98%]", "Client satisfaction"],
-];
+] as const;
 
 const testimonials = [
   { quote: "Placeholder testimonial — add a verified client statement about responsive bookkeeping and clearer reporting.", name: "Client name", role: "Founder · Company name" },
