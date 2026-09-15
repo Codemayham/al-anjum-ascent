@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -54,6 +54,13 @@ const services = [
   { icon: BriefcaseBusiness, title: "Business Finance Setup", text: "A clean financial foundation for new entities, from chart of accounts to reporting workflows." },
 ];
 
+const industries = [
+  ["Professional services", "Clear records and reporting for advisory, agency and specialist firms."],
+  ["Retail & hospitality", "Practical controls for daily transactions, suppliers and cash flow."],
+  ["Construction & real estate", "Organised project finances, documentation and management visibility."],
+  ["Trading & logistics", "Reliable books for inventory, margins, payments and operational decisions."],
+] as const;
+
 const solutions = [
   { number: "01", title: "Essential Books", text: "For founders who need dependable monthly records and reconciliations.", points: ["Monthly bookkeeping", "Bank reconciliation", "Management summary"] },
   { number: "02", title: "Tax Ready", text: "For UAE businesses that need coordinated books, VAT and corporate tax support.", points: ["Tax-ready records", "VAT return support", "Corporate tax guidance"] },
@@ -65,7 +72,7 @@ const stats = [
   ["[10+]", "Years' experience"],
   ["[50+]", "Industries served"],
   ["[98%]", "Client satisfaction"],
-];
+] as const;
 
 const testimonials = [
   { quote: "Placeholder testimonial — add a verified client statement about responsive bookkeeping and clearer reporting.", name: "Client name", role: "Founder · Company name" },
@@ -177,8 +184,44 @@ export function WhyChooseUs() {
   return <section id="why-choose-us" className="bg-surface py-24 lg:py-32"><div className="mx-auto grid max-w-7xl gap-14 px-5 lg:grid-cols-[1.05fr_.95fr]"><SectionHeading eyebrow="Why AL ANJUM" title="More than a service. A long-term partner." intro="A finance relationship designed around accountability, clarity and the realities of running a business." /><div className="grid gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-2">{values.map(([Icon, label]) => <div key={label} className="bg-background p-6"><Icon className="size-6 text-accent" strokeWidth={1.5} /><h3 className="mt-6 font-semibold">{label}</h3></div>)}</div></div></section>;
 }
 
+function AnimatedStat({ value, label }: { value: string; label: string }) {
+  const [displayValue, setDisplayValue] = useState("[0]");
+  const [started, setStarted] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const numericValue = Number(value.match(/\d+/)?.[0] ?? 0);
+  const prefix = value.startsWith("[") ? "[" : "";
+  const suffix = value.endsWith("%]") ? "%]" : value.endsWith("+]") ? "+]" : "]";
+
+  useEffect(() => {
+    const node = ref.current;
+    if (!node || started) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry?.isIntersecting) return;
+      setStarted(true);
+      const duration = 900;
+      const startTime = performance.now();
+      const tick = (now: number) => {
+        const progress = Math.min((now - startTime) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        setDisplayValue(`${prefix}${Math.round(numericValue * eased)}${suffix}`);
+        if (progress < 1) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+      observer.disconnect();
+    }, { threshold: 0.35 });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [numericValue, prefix, started, suffix]);
+
+  return <div ref={ref} className="bg-accent px-5 py-8"><strong className="block text-4xl font-semibold sm:text-5xl">{displayValue}</strong><span className="mt-2 block text-sm opacity-75">{label}</span></div>;
+}
+
 export function Stats() {
-  return <section className="bg-accent py-20 text-accent-foreground"><div className="mx-auto max-w-7xl px-5"><p className="mb-8 text-xs font-bold uppercase tracking-[0.2em] opacity-70">Illustrative figures · replace with verified data</p><div className="grid grid-cols-2 gap-px bg-accent-foreground/20 lg:grid-cols-4">{stats.map(([value, label]) => <div key={label} className="bg-accent px-5 py-8"><strong className="block text-4xl font-semibold sm:text-5xl">{value}</strong><span className="mt-2 block text-sm opacity-75">{label}</span></div>)}</div></div></section>;
+  return <section className="bg-accent py-20 text-accent-foreground"><div className="mx-auto max-w-7xl px-5"><p className="mb-8 text-xs font-bold uppercase tracking-[0.2em] opacity-70">Illustrative figures · replace with verified data</p><div className="grid grid-cols-2 gap-px bg-accent-foreground/20 lg:grid-cols-4">{stats.map(([value, label]) => <AnimatedStat key={label} value={value} label={label} />)}</div></div></section>;
+}
+
+export function Industries() {
+  return <section id="industries" className="border-y border-border py-24 lg:py-32"><div className="mx-auto max-w-7xl px-5"><SectionHeading eyebrow="Who we support" title="Financial clarity for the way you work." intro="Our approach adapts to the pace, paperwork and decisions that shape different businesses." /><div className="mt-14 grid gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">{industries.map(([title, text], index) => <article key={title} className="bg-background p-7"><span className="text-xs font-bold text-accent">0{index + 1}</span><h3 className="mt-16 text-xl font-semibold">{title}</h3><p className="mt-3 text-sm leading-6 text-muted-foreground">{text}</p></article>)}</div></div></section>;
 }
 
 export function CaseStudies() {
@@ -232,5 +275,5 @@ export function FloatingActions() {
 
 export function AlAnjumSite() {
   const schema = useMemo(() => ({ "@context": "https://schema.org", "@type": "ProfessionalService", name: "AL ANJUM Accounting and Bookkeeping Co. LLC", areaServed: "United Arab Emirates", description: "Accounting, bookkeeping, tax support and financial advisory services for businesses in the UAE." }), []);
-  return <><script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} /><Header /><main><Hero /><TrustBar /><Introduction /><Services /><ServiceFeatures /><Solutions /><Process /><WhyChooseUs /><Stats /><CaseStudies /><Testimonials /><Blog /><FAQ /><CTA /><Contact /></main><Footer /><FloatingActions /></>;
+  return <><script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} /><Header /><main><Hero /><TrustBar /><Introduction /><Services /><ServiceFeatures /><Solutions /><Process /><WhyChooseUs /><Industries /><Stats /><CaseStudies /><Testimonials /><Blog /><FAQ /><CTA /><Contact /></main><Footer /><FloatingActions /></>;
 }
